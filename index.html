@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Pin up to 12 suspect photos, tie them with red string, and label each connection.">
+<title>Red String Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Gochi+Hand&display=swap">
+<style>
+  /* Cut-and-paste collage: halftone-printed photos, thick ink outlines, doodles. One committed light look. */
+  :root{
+    --page:#efeee8;
+    --ink:#141414;
+    --white:#fffdf8;
+    --sky:#e4e9f6;
+    --dot:#5c73cb;
+    --cork:#c9a172;
+    --red:#e0372f;
+    --muted:#6b6a64;
+    --cw:clamp(108px, 11vw, 150px);
+    --line:2.5px;
+    color-scheme: light;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{
+    background:var(--page);color:var(--ink);
+    font-family:'Figtree','Avenir Next','Segoe UI',system-ui,sans-serif;
+    padding-inline:16px;padding-block:22px 36px;min-height:100%;
+  }
+  .wrap{max-width:1280px;margin:0 auto;display:grid;gap:18px}
+  .btn:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--dot);outline-offset:2px}
+
+  /* ---------- header ---------- */
+  header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px}
+  .brand{display:flex;align-items:center;gap:14px;min-width:0;flex:1 1 560px}
+  .brand svg{width:54px;height:54px;flex:none}
+  .casefile{display:grid;gap:2px;min-width:0;flex:1}
+  .eyebrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;font-weight:600;color:var(--muted)}
+  .chip{border:2px solid var(--ink);border-radius:999px;padding:1px 9px;color:var(--ink);background:var(--white);font-size:11.5px}
+  .chip.red{background:var(--red);color:var(--white)}
+  #caseTitle{
+    font:800 clamp(24px,3.4vw,38px)/1.1 'Figtree','Avenir Next',system-ui,sans-serif;letter-spacing:-.025em;color:var(--ink);
+    background:transparent;border:0;border-bottom:2.5px dashed transparent;padding:2px 0;width:100%;
+  }
+  #caseTitle:hover{border-bottom-color:rgba(20,20,20,.25)}
+  #caseTitle:focus{outline:none;border-bottom-color:var(--ink)}
+  .caseno{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .count{display:grid;gap:5px;font-size:12.5px;font-weight:600;color:var(--muted);margin-right:6px}
+  .count b{color:var(--ink);font-weight:800;font-variant-numeric:tabular-nums}
+  .dots{display:flex;gap:4px}
+  .dots i{width:11px;height:11px;border-radius:50%;border:2px solid var(--ink);display:block;background:var(--white)}
+  .dots i.on{background:var(--red)}
+
+  .btn{
+    font:600 15px/1 'Figtree','Avenir Next',system-ui,sans-serif;cursor:pointer;border-radius:999px;padding:11px 18px;
+    border:var(--line) solid var(--ink);background:var(--white);color:var(--ink);
+    display:inline-flex;align-items:center;gap:8px;transition:transform .12s, box-shadow .12s;
+  }
+  .btn:hover{transform:translate(-1px,-2px);box-shadow:3px 4px 0 var(--ink)}
+  .btn:active{transform:none;box-shadow:none}
+  .btn.primary{background:var(--ink);color:var(--white)}
+  .btn.danger.arm{background:var(--red);color:var(--white)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+  /* ---------- the scene: halftone sky, sidewalk, board on the wall ---------- */
+  .scene{
+    position:relative;border:3px solid var(--ink);border-radius:8px;
+    padding:clamp(44px,5.4vw,70px) clamp(14px,4.5vw,64px) calc(var(--floor) + clamp(14px,2vw,26px));
+    --floor:clamp(58px,8vw,104px);
+    isolation:isolate;
+  }
+  .backdrop{position:absolute;inset:0;border-radius:5px;overflow:hidden;z-index:-1;background:var(--sky)}
+  .backdrop::before{content:"";position:absolute;inset:0;
+    background:radial-gradient(circle, var(--dot) 1.15px, transparent 1.7px) 0 0/4.6px 4.6px;opacity:.85}
+  .clouds{position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse 22% 18% at 80% 14%, var(--white) 0 35%, rgba(255,253,248,.85) 55%, transparent 72%),
+      radial-gradient(ellipse 16% 14% at 90% 30%, var(--white) 0 30%, rgba(255,253,248,.8) 55%, transparent 72%),
+      radial-gradient(ellipse 14% 16% at 6% 58%, var(--white) 0 30%, rgba(255,253,248,.8) 55%, transparent 72%),
+      radial-gradient(ellipse 26% 16% at 70% 78%, var(--white) 0 30%, rgba(255,253,248,.85) 55%, transparent 72%),
+      radial-gradient(ellipse 18% 12% at 22% 8%, rgba(255,253,248,.9) 0 30%, transparent 70%),
+      radial-gradient(ellipse 20% 22% at 98% 62%, var(--white) 0 30%, rgba(255,253,248,.8) 55%, transparent 72%);}
+  .floor{position:absolute;left:0;right:0;bottom:0;height:var(--floor);border-top:3px solid var(--ink);
+    background:
+      radial-gradient(circle, rgba(20,20,30,.55) 1px, transparent 1.6px) 0 0/4px 4px,
+      repeating-linear-gradient(90deg, transparent 0 calc(25% - 2px), rgba(20,20,30,.35) calc(25% - 2px) 25%),
+      linear-gradient(180deg,#c6cbd6,#9aa0ad);}
+  .floor::after{content:"";position:absolute;left:0;right:0;top:38%;height:2px;background:rgba(20,20,30,.35)}
+
+  .hintpill{
+    position:absolute;top:0;left:50%;transform:translate(-50%,-50%);z-index:10;
+    display:flex;align-items:center;gap:10px;white-space:nowrap;max-width:calc(100% - 24px);
+    background:var(--white);border:var(--line) solid var(--ink);border-radius:999px;padding:10px 20px;
+    font-size:clamp(13px,1.3vw,16px);font-weight:500;box-shadow:0 3px 8px rgba(0,0,0,.08);
+  }
+  .hintpill span{overflow:hidden;text-overflow:ellipsis}
+  .hintpill svg{width:22px;height:22px;flex:none}
+
+  .sign{position:absolute;right:clamp(4px,2.4vw,34px);bottom:calc(var(--floor) * .28);width:clamp(96px,12.5vw,178px);z-index:1;pointer-events:none}
+
+  /* Oak frame, printed: four mitered rails, halftone, ink outline */
+  .frame{
+    --ft:clamp(14px,2vw,24px);
+    position:relative;padding:var(--ft);border:3px solid var(--ink);border-radius:4px;background:var(--ink);
+    box-shadow:6px 7px 0 rgba(20,20,20,.18);
+  }
+  .rail{position:absolute;inset:0;pointer-events:none;background-color:#a8753f}
+  .rail::after{content:"";position:absolute;inset:0;background:radial-gradient(circle, rgba(40,20,5,.35) .95px, transparent 1.45px) 0 0/4px 4px}
+  .rail.t{clip-path:polygon(0 0,100% 0,calc(100% - var(--ft)) var(--ft),var(--ft) var(--ft));
+    background-image:linear-gradient(180deg,rgba(255,240,210,.3),transparent),var(--grainH);}
+  .rail.b{clip-path:polygon(var(--ft) calc(100% - var(--ft)),calc(100% - var(--ft)) calc(100% - var(--ft)),100% 100%,0 100%);
+    background-image:linear-gradient(0deg,rgba(0,0,0,.25),transparent),var(--grainH);background-position:0 0,0 37px;}
+  .rail.l{clip-path:polygon(0 0,var(--ft) var(--ft),var(--ft) calc(100% - var(--ft)),0 100%);
+    background-image:linear-gradient(90deg,rgba(255,240,210,.12),transparent),var(--grainV);}
+  .rail.r{clip-path:polygon(100% 0,100% 100%,calc(100% - var(--ft)) calc(100% - var(--ft)),calc(100% - var(--ft)) var(--ft));
+    background-image:linear-gradient(270deg,rgba(0,0,0,.22),transparent),var(--grainV);background-position:0 0,23px 0;}
+
+  .board{
+    position:relative;overflow:hidden;
+    height:clamp(560px, 52vw, 760px);
+    outline:3px solid var(--ink);
+    background-color:var(--cork);
+    background-image:radial-gradient(circle, rgba(70,38,12,.2) 1px, transparent 1.55px), var(--noise, none);
+    background-size:4px 4px, 360px 360px;
+  }
+  .layer{position:absolute;inset:0}
+  #deco{width:100%;height:100%;pointer-events:none;z-index:0}
+  #strings{width:100%;height:100%;pointer-events:none;z-index:5000;overflow:visible}
+  #tags{pointer-events:none;z-index:5001}
+  #pins{pointer-events:none;z-index:5002}
+
+  /* ---------- polaroids as outlined cut-outs ---------- */
+  .card{
+    position:absolute;width:var(--cw);
+    transform-origin:50% 10px;
+    background:var(--white);border:var(--line) solid var(--ink);border-radius:5px;
+    padding:7px 7px 3px;
+    box-shadow:4px 5px 0 rgba(20,20,20,.2);
+    cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+    transition:box-shadow .15s, scale .15s;
+  }
+  .card.lifted{cursor:grabbing;scale:1.05;box-shadow:8px 11px 0 rgba(20,20,20,.22)}
+  .card.sel{box-shadow:0 0 0 3px var(--dot),4px 5px 0 rgba(20,20,20,.2)}
+  .photo{aspect-ratio:1;background:#8c93a6;overflow:hidden;max-width:100%;position:relative;border:2px solid var(--ink);border-radius:2px}
+  /* halftone print over every photo */
+  .photo::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;
+    background:radial-gradient(circle, rgba(60,80,170,.4) .9px, transparent 1.5px) 0 0/3.4px 3.4px, rgba(210,220,245,.18);}
+  .photo img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;filter:contrast(1.18) saturate(.85) brightness(1.04)}
+  .card .name{
+    display:block;width:100%;border:0;background:transparent;text-align:center;
+    font-family:'Gochi Hand','Bradley Hand','Comic Sans MS',cursive;font-size:clamp(15px,1.35vw,19px);line-height:1.2;
+    color:var(--ink);padding:4px 0 1px;text-overflow:ellipsis;
+  }
+  .card .name::placeholder{color:#9b9a93}
+  .card .name:focus{outline:none;background:rgba(92,115,203,.15);border-radius:4px}
+  .tools{position:absolute;top:-13px;right:-13px;display:flex;gap:5px;opacity:0;transition:opacity .12s}
+  .card:hover .tools,.card:focus-within .tools,.card.sel .tools{opacity:1}
+  .tool{
+    width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);cursor:pointer;display:grid;place-items:center;
+    background:var(--white);color:var(--ink);padding:0;
+  }
+  .tool:hover{background:var(--red);color:var(--white)}
+  .tool svg{width:15px;height:15px}
+
+  .pin{
+    --pc:var(--red);
+    position:absolute;width:19px;height:19px;border-radius:50%;
+    transform:translate(-50%,-50%);pointer-events:auto;cursor:crosshair;touch-action:none;
+    border:2.5px solid var(--ink);padding:0;
+    background:radial-gradient(circle at 34% 32%, var(--white) 0 16%, transparent 18%), var(--pc);
+    box-shadow:2px 3px 0 rgba(20,20,20,.3);
+  }
+  .pin::before{content:"";position:absolute;inset:-11px;border-radius:50%}
+  .pin:hover{scale:1.12}
+  .pin.armed{box-shadow:0 0 0 4px var(--white),0 0 0 6.5px var(--ink)}
+  .pin.target{scale:1.25;box-shadow:0 0 0 4px var(--white),0 0 0 6.5px var(--ink)}
+
+  /* connection labels: outlined pills, like the site's callouts */
+  .tag{
+    position:absolute;pointer-events:auto;display:flex;align-items:center;gap:2px;
+    background:var(--white);border:2px solid var(--ink);border-radius:999px;
+    padding:2px 4px 2px 11px;white-space:nowrap;
+  }
+  .tag input{
+    font:600 13px/1.2 'Figtree','Avenir Next',system-ui,sans-serif;color:var(--ink);
+    border:0;background:transparent;padding:2px 0;min-width:0;
+  }
+  .tag input::placeholder{color:#9b9a93;font-weight:500}
+  .tag input:focus{outline:none}
+  .tag:focus-within{box-shadow:0 0 0 3px var(--dot)}
+  .tag .x{
+    border:0;background:transparent;color:var(--muted);cursor:pointer;font:600 15px/1 'Figtree',sans-serif;
+    width:20px;height:20px;padding:0;border-radius:50%;opacity:.5;
+  }
+  .tag:hover .x,.tag:focus-within .x{opacity:1}
+  .tag .x:hover{background:var(--red);color:var(--white)}
+
+  .empty{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+  .empty .note{
+    pointer-events:auto;color:var(--ink);padding:24px 26px 22px;max-width:330px;margin-inline:16px;
+    background:var(--white);border:var(--line) solid var(--ink);border-radius:14px;box-shadow:6px 7px 0 var(--ink);
+    text-align:center;display:grid;gap:10px;font-size:15px;line-height:1.5;transform:rotate(-1.5deg);
+  }
+  .empty .note strong{font-family:'Gochi Hand',cursive;font-weight:400;font-size:28px;line-height:1.1}
+  .drop{
+    position:absolute;inset:12px;border:3px dashed var(--ink);border-radius:12px;
+    display:grid;place-items:center;background:rgba(255,253,248,.75);z-index:6000;pointer-events:none;
+    font-family:'Gochi Hand',cursive;font-size:32px;color:var(--ink);
+  }
+
+  .tips{font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 22px;line-height:1.5}
+  .tips b{color:var(--ink);font-weight:700}
+
+  .toast{
+    position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+    background:var(--white);color:var(--ink);padding:11px 18px;border-radius:999px;z-index:9000;
+    border:var(--line) solid var(--ink);box-shadow:4px 5px 0 var(--ink);
+    display:flex;gap:14px;align-items:center;max-width:calc(100% - 32px);font-size:14.5px;font-weight:500;
+  }
+  .toast button{font:inherit;font-weight:700;background:none;border:0;color:var(--red);cursor:pointer;text-decoration:underline;padding:0}
+
+  @media (max-width:560px){ .sign{display:none} .hintpill{padding:8px 14px} }
+  @media (prefers-reduced-motion: reduce){ .card,.btn{transition:none} }
+</style>
+<style>html,body{margin:0} img{max-width:100%}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="27" cy="27" r="19" fill="#fffdf8" stroke="#141414" stroke-width="3.5"/>
+        <circle cx="27" cy="27" r="13.5" fill="#e4e9f6" stroke="#141414" stroke-width="2"/>
+        <circle cx="22.5" cy="25" r="2.2" fill="#141414"/><circle cx="31.5" cy="25" r="2.2" fill="#141414"/>
+        <path d="M22 31.5q5 4.5 10 0" fill="none" stroke="#141414" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M41 41l14 14" stroke="#141414" stroke-width="7" stroke-linecap="round"/>
+      </svg>
+      <div class="casefile">
+        <div class="eyebrow"><span class="chip">case file</span><span class="chip red">unsolved</span><span class="caseno" id="caseNo">case no. 26-0847</span></div>
+        <input id="caseTitle" aria-label="Case name" maxlength="60" value="The Ashford Manor Murder">
+      </div>
+    </div>
+    <div class="controls">
+      <div class="count" aria-live="polite">
+        <span><b id="countNum">0</b> / 12 suspects</span>
+        <div class="dots" id="dots"></div>
+      </div>
+      <button class="btn primary" id="addBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        pin a suspect
+      </button>
+      <button class="btn" id="resetBtn" type="button">load example case</button>
+      <button class="btn danger" id="clearBtn" type="button">clear board</button>
+    </div>
+  </header>
+
+  <div class="scene">
+    <div class="backdrop" aria-hidden="true"><div class="clouds"></div><div class="floor"></div></div>
+    <div class="hintpill">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="6" r="2.6" fill="#e0372f"/><circle cx="19" cy="16" r="2.6" fill="#e0372f"/><path d="M7.4 7.2C11 12 13 9 16.6 14.8" stroke="#e0372f" stroke-width="2.2"/></svg>
+      <span>drag from pin to pin to tie red string</span>
+    </div>
+  <div class="frame">
+    <div class="rail t"></div><div class="rail b"></div><div class="rail l"></div><div class="rail r"></div>
+    <div class="board" id="board">
+      <canvas class="layer" id="deco" aria-hidden="true"></canvas>
+      <div class="layer" id="cards"></div>
+      <svg class="layer" id="strings" aria-hidden="true">
+        <defs>
+          <filter id="soft" filterUnits="userSpaceOnUse" x="-200" y="-200" width="6000" height="6000"><feGaussianBlur stdDeviation="1.2"/></filter>
+        </defs>
+        <g id="stringGroup"></g>
+        <path id="live" fill="none" stroke="#e0372f" stroke-width="3" stroke-linecap="round" stroke-dasharray="7 6" opacity="0"/>
+      </svg>
+      <div class="layer" id="tags"></div>
+      <div class="layer" id="pins"></div>
+      <div class="empty" id="empty" hidden>
+        <div class="note">
+          <strong>no suspects yet!</strong>
+          <span>Pin up to 12 photos, then run red string between them to show who's connected.</span>
+          <button class="btn primary" id="emptyAdd" type="button" style="justify-self:center">pin a suspect</button>
+        </div>
+      </div>
+      <div class="drop" id="drop" hidden>drop the photos to pin them</div>
+    </div>
+  </div>
+    <svg class="sign" viewBox="0 0 200 250" aria-hidden="true">
+      <path d="M150 18 L188 232 Q184 240 176 236 L140 40 Z" fill="#d8d7d0" stroke="#141414" stroke-width="4.5" stroke-linejoin="round"/>
+      <path d="M26 20 Q92 12 156 16 Q162 18 162 26 L176 226 Q176 236 166 236 Q96 232 22 238 Q12 238 12 228 L20 28 Q20 21 26 20 Z" fill="#fffdf8" stroke="#141414" stroke-width="4.5" stroke-linejoin="round"/>
+      <path d="M40 236 q6 10 14 0" fill="#fffdf8" stroke="#141414" stroke-width="4"/>
+      <path d="M140 236 q6 10 14 0" fill="#fffdf8" stroke="#141414" stroke-width="4"/>
+      <path d="M58 58 Q92 38 126 58 L120 62 Q92 50 64 62 Z" fill="#141414"/>
+      <path d="M70 56 Q72 34 92 32 Q112 34 114 56" fill="#141414"/>
+      <circle cx="92" cy="92" r="33" fill="#fffdf8" stroke="#141414" stroke-width="4.5"/>
+      <circle cx="92" cy="92" r="24" fill="#e4e9f6" stroke="#141414" stroke-width="2.5"/>
+      <circle cx="83" cy="88" r="3.8" fill="#141414"/><circle cx="101" cy="88" r="3.8" fill="#141414"/>
+      <path d="M83 101 Q92 109 101 101" fill="none" stroke="#141414" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M116 116 L140 142" stroke="#141414" stroke-width="10" stroke-linecap="round"/>
+      <text x="94" y="182" text-anchor="middle" font-family="'Gochi Hand','Comic Sans MS',cursive" font-size="30" fill="#141414">who dunnit?</text>
+      <text x="94" y="205" text-anchor="middle" font-family="'Courier New',monospace" font-size="11" letter-spacing="1.5" fill="#141414">CASE NO. 0847</text>
+    </svg>
+  </div>
+
+  <div class="tips">
+    <span><b>type on a label</b> to say how two suspects are linked</span>
+    <span><b>drag photos</b> to rearrange, or drop image files onto the board</span>
+    <span><b>tap a pin</b>, then another, if you're on a phone</span>
+  </div>
+
+  <input type="file" id="fileInput" accept="image/*" multiple hidden>
+  <input type="file" id="replaceInput" accept="image/*" hidden>
+</div>
+
+<div class="toast" id="toast" hidden role="status"><span id="toastMsg"></span><button id="toastAct" type="button" hidden>undo</button></div>
+
+<script>
+(() => {
+  const MAX = 12, PIN_OFF = 10, KEY = 'red-string-board-v1';
+  const $ = s => document.querySelector(s);
+  const board = $('#board'), cardsLayer = $('#cards'), pinsLayer = $('#pins'),
+        tagsLayer = $('#tags'), stringGroup = $('#stringGroup'), live = $('#live');
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  let state, selected = null, pending = null, lastRemoved = null;
+  const cardEls = new Map(), pinEls = new Map(), tagEls = new Map(), strEls = new Map();
+
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const byId = id => state.suspects.find(s => s.id === id);
+
+  /* ---------- cork: soft blotches, packed granules, pits, fine grain ---------- */
+  (function cork(){
+    const S = 360, c = document.createElement('canvas'); c.width = c.height = S;
+    const g = c.getContext('2d');
+    g.fillStyle = '#9f774d'; g.fillRect(0, 0, S, S);
+    const wrap = fn => { for (const dx of [-S, 0, S]) for (const dy of [-S, 0, S]) fn(dx, dy); };
+    for (let i = 0; i < 70; i++) {
+      const x = Math.random() * S, y = Math.random() * S, r = 20 + Math.random() * 60, light = Math.random() < .5;
+      wrap((dx, dy) => {
+        const rg = g.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
+        rg.addColorStop(0, light ? 'rgba(222,178,120,.18)' : 'rgba(110,64,26,.16)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = rg; g.fillRect(x + dx - r, y + dy - r, r * 2, r * 2);
+      });
+    }
+    const pal = ['#86603c','#94693f','#a77c50','#b48b5e','#7a5535','#9c7248','#bb9468','#8d6440'];
+    for (let i = 0; i < 5200; i++) {
+      const x = Math.random() * S, y = Math.random() * S, r = .7 + Math.random() * Math.random() * 3.4;
+      const n = 4 + (Math.random() * 3 | 0), rot = Math.random() * 6.3, pts = [];
+      for (let k = 0; k < n; k++) { const a = rot + k / n * 6.283, rr = r * (.55 + Math.random() * .6); pts.push([Math.cos(a) * rr, Math.sin(a) * rr]); }
+      g.fillStyle = pal[Math.random() * pal.length | 0]; g.globalAlpha = .3 + Math.random() * .4;
+      wrap((dx, dy) => { g.beginPath(); pts.forEach(([px, py], k) => k ? g.lineTo(x + dx + px, y + dy + py) : g.moveTo(x + dx + px, y + dy + py)); g.closePath(); g.fill(); });
+    }
+    g.globalAlpha = 1;
+    for (let i = 0; i < 1100; i++) {
+      const x = Math.random() * S, y = Math.random() * S, r = .3 + Math.random() * 1;
+      g.fillStyle = `rgba(52,28,10,${.35 + Math.random() * .45})`;
+      wrap((dx, dy) => { g.beginPath(); g.arc(x + dx, y + dy, r, 0, 7); g.fill(); });
+    }
+    const img = g.getImageData(0, 0, S, S), d = img.data;
+    for (let i = 0; i < d.length; i += 4) { const n = (Math.random() - .5) * 18; d[i] += n; d[i + 1] += n * .9; d[i + 2] += n * .75; }
+    g.putImageData(img, 0, 0);
+    board.style.setProperty('--noise', `url(${c.toDataURL()})`);
+  })();
+
+  /* ---------- oak grain for the frame rails ---------- */
+  (function oak(){
+    const L = 640, T = 64, c = document.createElement('canvas'); c.width = L; c.height = T;
+    const g = c.getContext('2d');
+    const base = g.createLinearGradient(0, 0, 0, T);
+    base.addColorStop(0, '#b07c45'); base.addColorStop(.5, '#bd8a52'); base.addColorStop(1, '#a1703d');
+    g.fillStyle = base; g.fillRect(0, 0, L, T);
+    for (let i = 0; i < 70; i++) {
+      let y = Math.random() * T; const amp = .5 + Math.random() * 2.5, f = .004 + Math.random() * .012, ph = Math.random() * 6;
+      g.strokeStyle = Math.random() < .75 ? `rgba(78,44,16,${.12 + Math.random() * .3})` : `rgba(230,190,140,${.08 + Math.random() * .15})`;
+      g.lineWidth = .4 + Math.random() * 1.6; g.beginPath();
+      for (let x = 0; x <= L; x += 8) { const yy = y + Math.sin(x * f + ph) * amp + Math.sin(x * f * 3.1) * amp * .3; x ? g.lineTo(x, yy) : g.moveTo(x, yy); }
+      g.stroke();
+    }
+    for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(60,32,10,${Math.random() * .35})`; g.fillRect(Math.random() * L, Math.random() * T, 2 + Math.random() * 7, .8); }
+    const h = c.toDataURL();
+    const v = document.createElement('canvas'); v.width = T; v.height = L;
+    const gv = v.getContext('2d'); gv.translate(T, 0); gv.rotate(Math.PI / 2); gv.drawImage(c, 0, 0);
+    const fr = document.querySelector('.frame');
+    fr.style.setProperty('--grainH', `url(${h})`); fr.style.setProperty('--grainV', `url(${v.toDataURL()})`);
+  })();
+
+  /* ---------- history on the cork: old pinholes, staples, torn scraps, a coffee ring ---------- */
+  const deco = $('#deco');
+  function drawDeco() {
+    const W = board.clientWidth, H = board.clientHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
+    deco.width = W * dpr; deco.height = H * dpr;
+    const g = deco.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    let seed = 20260926; const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+    const hole = (x, y) => {
+      g.fillStyle = 'rgba(230,190,140,.35)'; g.beginPath(); g.arc(x + .6, y + .6, 1.7, 0, 7); g.fill();
+      g.fillStyle = 'rgba(30,14,4,.85)'; g.beginPath(); g.arc(x, y, 1.1, 0, 7); g.fill();
+    };
+    // sun-faded ghosts of paper that used to hang here
+    for (let i = 0; i < 3; i++) {
+      const w = 110 + rnd() * 120, h = 80 + rnd() * 110, x = rnd() * (W - w), y = rnd() * (H - h);
+      g.save(); g.translate(x + w / 2, y + h / 2); g.rotate((rnd() - .5) * .12);
+      g.fillStyle = 'rgba(95,55,20,.09)'; g.fillRect(-w / 2, -h / 2, w, h);
+      hole(-w / 2 + 8, -h / 2 + 8); hole(w / 2 - 8, -h / 2 + 8); g.restore();
+    }
+    for (let i = 0; i < Math.round(W * H / 9000); i++) hole(rnd() * W, rnd() * H);
+    // staples left behind
+    for (let i = 0; i < 7; i++) {
+      const x = rnd() * W, y = rnd() * H, a = (rnd() - .5) * .8;
+      g.save(); g.translate(x, y); g.rotate(a);
+      g.fillStyle = 'rgba(20,10,0,.35)'; g.fillRect(-5, 1, 11, 2);
+      const sg = g.createLinearGradient(0, -1, 0, 1.6); sg.addColorStop(0, '#e9ecef'); sg.addColorStop(1, '#7c8288');
+      g.fillStyle = sg; g.fillRect(-6, -1, 11, 2.2); g.restore();
+    }
+    // torn paper corners still stuck under old pins
+    for (let i = 0; i < 4; i++) {
+      const x = 30 + rnd() * (W - 60), y = 30 + rnd() * (H - 60), s = 14 + rnd() * 18, a = rnd() * 6.28;
+      g.save(); g.translate(x, y); g.rotate(a);
+      g.fillStyle = rnd() < .5 ? '#ddd5c3' : '#cfc6b1'; g.shadowColor = 'rgba(20,8,0,.35)'; g.shadowBlur = 3; g.shadowOffsetY = 1.5;
+      g.beginPath(); g.moveTo(0, 0); g.lineTo(s * 1.5, 0);
+      for (let k = 1; k <= 5; k++) g.lineTo(s * 1.5 * (1 - k / 5) + (rnd() - .5) * 4, s * (k / 5) + (rnd() - .5) * 4);
+      g.closePath(); g.fill(); g.shadowColor = 'transparent';
+      hole(s * .4, s * .3); g.restore();
+    }
+    // coffee ring
+    const cx = W * (.62 + rnd() * .25), cy = H * (.72 + rnd() * .15), r = 34;
+    g.lineWidth = 3.2; g.strokeStyle = 'rgba(70,35,10,.2)'; g.beginPath(); g.arc(cx, cy, r, .3, 5.9); g.stroke();
+    g.lineWidth = 1.2; g.strokeStyle = 'rgba(70,35,10,.14)'; g.beginPath(); g.arc(cx + 2, cy - 1, r - 4, 1.2, 4.6); g.stroke();
+    g.fillStyle = 'rgba(80,40,12,.05)'; g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fill();
+  }
+
+  const PIN_COLORS = ['#e0372f', '#e0372f', '#e0372f', '#5c73cb', '#f2c230', '#fffdf8'];
+  function pinColor(s) {
+    if (!s.pin) { let h = 0; for (const ch of s.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0; s.pin = PIN_COLORS[h % PIN_COLORS.length]; }
+    return s.pin;
+  }
+
+  /* ---------- example booking photos: grainy, low-key black and white ---------- */
+  function mugshot({wall = 180, hair = 'short', glasses = false, num, shift = 0}) {
+    const S = 300, c = document.createElement('canvas'); c.width = c.height = S;
+    const g = c.getContext('2d');
+    const wg = g.createLinearGradient(0, 0, S, S);
+    wg.addColorStop(0, `rgb(${wall + 22},${wall + 21},${wall + 18})`); wg.addColorStop(1, `rgb(${wall - 55},${wall - 56},${wall - 58})`);
+    g.fillStyle = wg; g.fillRect(0, 0, S, S);
+    g.strokeStyle = 'rgba(25,25,25,.28)'; g.fillStyle = 'rgba(25,25,25,.42)'; g.lineWidth = 1;
+    g.font = '10px "Courier New", monospace';
+    ['6-6','6-3','6-0','5-9','5-6','5-3','5-0'].forEach((t, i) => {
+      const y = 18 + i * 32; g.beginPath(); g.moveTo(0, y); g.lineTo(S, y); g.stroke(); g.fillText(t, 5, y - 3); g.fillText(t, S - 26, y - 3);
+    });
+
+    // figure on its own layer so it can cast a soft shadow on the wall and take lighting
+    const f = document.createElement('canvas'); f.width = f.height = S;
+    const fg = f.getContext('2d'); fg.translate(shift, 0); fg.fillStyle = '#000';
+    fg.beginPath(); fg.moveTo(4, S); fg.bezierCurveTo(14, 238, 62, 222, 120, 212); fg.lineTo(180, 212); fg.bezierCurveTo(238, 222, 286, 238, 296, S); fg.closePath(); fg.fill();
+    fg.fillRect(128, 160, 44, 60);
+    fg.beginPath(); fg.ellipse(150, 124, 44, 57, 0, 0, 7); fg.fill();
+    fg.beginPath(); fg.ellipse(106, 130, 7, 13, -.1, 0, 7); fg.ellipse(194, 130, 7, 13, .1, 0, 7); fg.fill();
+    if (hair === 'short' || hair === 'curly') { fg.beginPath(); fg.ellipse(150, 100, 49, 40, 0, Math.PI * .95, Math.PI * 2.05); fg.fill(); }
+    if (hair === 'curly') for (let i = 0; i < 12; i++) { fg.beginPath(); fg.arc(108 + i * 7.6, 76 + Math.abs(5.5 - i) * 2.6 + (i % 2) * 3, 9, 0, 7); fg.fill(); }
+    if (hair === 'long') { fg.beginPath(); fg.moveTo(100, 110); fg.bezierCurveTo(96, 50, 204, 50, 200, 110); fg.bezierCurveTo(206, 170, 214, 205, 222, 228); fg.lineTo(78, 228); fg.bezierCurveTo(86, 205, 94, 170, 100, 110); fg.fill(); }
+    if (hair === 'cap') { fg.beginPath(); fg.ellipse(150, 90, 50, 30, 0, Math.PI, Math.PI * 2); fg.fill(); fg.beginPath(); fg.ellipse(150, 90, 56, 7, 0, 0, 7); fg.fill(); }
+    fg.globalCompositeOperation = 'source-atop';
+    const lg = fg.createRadialGradient(95 - shift, 90, 5, 120 - shift, 140, 230);
+    lg.addColorStop(0, '#6f6a64'); lg.addColorStop(.3, '#3a3632'); lg.addColorStop(.7, '#161412'); lg.addColorStop(1, '#0a0909');
+    fg.fillStyle = lg; fg.fillRect(-shift, 0, S, S);
+    if (glasses) { fg.globalCompositeOperation = 'source-over'; fg.strokeStyle = 'rgba(200,196,188,.45)'; fg.lineWidth = 2;
+      [131, 169].forEach(x => { fg.beginPath(); fg.ellipse(x, 124, 14, 11, 0, 0, 7); fg.stroke(); }); fg.beginPath(); fg.moveTo(145, 123); fg.lineTo(155, 123); fg.stroke(); }
+
+    g.save(); g.filter = 'blur(9px)'; g.globalAlpha = .45; g.drawImage(f, 16, 8); g.restore();
+    g.save(); g.filter = 'blur(1.1px)'; g.drawImage(f, 0, 0); g.restore();
+
+    // booking placard
+    g.fillStyle = '#111'; g.fillRect(76, 234, 148, 54);
+    g.strokeStyle = 'rgba(255,255,255,.18)'; g.strokeRect(79, 237, 142, 48);
+    g.fillStyle = '#e4e1da'; g.textAlign = 'center';
+    g.font = '9px "Courier New", monospace'; g.fillText('ASHFORD CO. SHERIFF', 150, 250);
+    g.font = 'bold 17px "Courier New", monospace'; g.fillText(num, 150, 268);
+    g.font = '9px "Courier New", monospace'; g.fillText('09 26 26', 150, 281);
+
+    // film grain, tone, and lens falloff
+    const img = g.getImageData(0, 0, S, S), d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const x = (i / 4) % S, y = (i / 4 / S) | 0, dx = x - 150, dy = y - 150;
+      const fall = 1 - Math.min(.45, (dx * dx + dy * dy) / 110000);
+      const v = (d[i] * .3 + d[i + 1] * .59 + d[i + 2] * .11) * fall + (Math.random() - .5) * 34;
+      d[i] = v * 1.03 + 3; d[i + 1] = v; d[i + 2] = v * .94;
+    }
+    g.putImageData(img, 0, 0);
+    return c.toDataURL('image/jpeg', .86);
+  }
+
+  const LOOKS = {
+    'Lord Ashford (victim)': {wall: 176, hair: 'bald', num: 'ASH 0001', shift: 2},
+    'Reginald the butler':   {wall: 190, hair: 'short', num: 'ASH 0412', shift: -4},
+    'Lady Violet':           {wall: 170, hair: 'long', num: 'ASH 0413', shift: 3},
+    'Dr. Crane':             {wall: 184, hair: 'short', glasses: true, num: 'ASH 0414', shift: -2},
+    'Moss, groundskeeper':   {wall: 166, hair: 'cap', num: 'ASH 0415', shift: 5},
+    'Nephew Julian':         {wall: 186, hair: 'curly', num: 'ASH 0416', shift: -3},
+  };
+
+  function sample() {
+    const S = (name, x, y, rot) => ({ id: uid(), name, x, y, rot, z: 1, look: name, img: mugshot(LOOKS[name]) });
+    const victim = S('Lord Ashford (victim)', .5, .30, -1.5);
+    const butler = S('Reginald the butler', .17, .07, -3);
+    const violet = S('Lady Violet', .83, .06, 2.5);
+    const crane  = S('Dr. Crane', .15, .57, 2);
+    const moss   = S('Moss, groundskeeper', .85, .55, -2.5);
+    const julian = S('Nephew Julian', .5, .64, 1);
+    const L = (a, b, label) => ({ id: uid(), a: a.id, b: b.id, label });
+    return {
+      title: 'The Ashford Manor Murder',
+      suspects: [victim, butler, violet, crane, moss, julian],
+      links: [
+        L(butler, victim, 'served his last brandy'),
+        L(violet, victim, 'inherits the estate'),
+        L(violet, crane, 'secret affair?'),
+        L(crane, victim, 'prescribed the sleeping pills'),
+        L(moss, violet, 'saw her in the garden at 11:40 PM'),
+        L(julian, victim, 'owed him £40,000'),
+      ]
+    };
+  }
+
+  // boards saved before the restyle keep their layout but get the new example photos and pins
+  function upgrade(st) {
+    if (st.style === 3) return st;
+    const old = (st.style || 0) < 2;
+    st.suspects.forEach(s => {
+      delete s.pin;
+      if (!old) return;
+      const look = s.look || (LOOKS[s.name] && s.img && s.img.length < 60000 ? s.name : null);
+      if (look && LOOKS[look]) { s.look = look; s.img = mugshot(LOOKS[look]); }
+    });
+    st.style = 3; return st;
+  }
+
+  /* ---------- persistence ---------- */
+  let warnedQuota = false;
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch (e) {
+      if (!warnedQuota) { warnedQuota = true; toast("These photos are too large to remember on this device. The board still works; it just won't be saved."); }
+    }
+  }
+  function load() {
+    try { const raw = localStorage.getItem(KEY); if (!raw) return null; const s = JSON.parse(raw); return s && Array.isArray(s.suspects) ? s : null; }
+    catch (e) { return null; }
+  }
+
+  /* ---------- toast ---------- */
+  let toastTimer;
+  function toast(msg, action) {
+    const t = $('#toast'), btn = $('#toastAct');
+    $('#toastMsg').textContent = msg; t.hidden = false;
+    btn.hidden = !action; btn.onclick = action ? () => { action(); t.hidden = true; } : null;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, action ? 6000 : 3800);
+  }
+
+  /* ---------- rendering ---------- */
+  function dims() { return { W: board.clientWidth, H: board.clientHeight }; }
+  function pinXY(s) { const { W, H } = dims(); return [s.x * W, s.y * H + PIN_OFF]; }
+
+  function placeCard(s) {
+    const el = cardEls.get(s.id), { W, H } = dims();
+    const halfW = el.offsetWidth / 2 / W;
+    s.x = clamp(s.x, halfW + .005, 1 - halfW - .005);
+    s.y = clamp(s.y, .01, Math.max(.01, (H - el.offsetHeight - 8) / H));
+    el.style.left = (s.x * 100) + '%';
+    el.style.top = (s.y * 100) + '%';
+    el.style.transform = `translateX(-50%) rotate(${s.rot}deg)`;
+    el.style.zIndex = s.z + 1;
+    const pin = pinEls.get(s.id);
+    pin.style.left = (s.x * 100) + '%';
+    pin.style.top = `calc(${s.y * 100}% + ${PIN_OFF}px)`;
+  }
+
+  const icon = {
+    cam: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+    x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+
+  function makeCard(s) {
+    const el = document.createElement('div');
+    el.className = 'card'; el.dataset.id = s.id;
+    el.innerHTML = `
+      <div class="photo"><img alt=""></div>
+      <input class="name" id="name-${s.id}" maxlength="40" placeholder="Name this suspect" aria-label="Suspect name">
+      <div class="tools">
+        <button class="tool" type="button" data-act="replace" title="Replace photo" aria-label="Replace photo">${icon.cam}</button>
+        <button class="tool" type="button" data-act="remove" title="Take off the board" aria-label="Remove suspect">${icon.x}</button>
+      </div>`;
+    el.querySelector('img').src = s.img;
+    const name = el.querySelector('.name');
+    name.value = s.name || '';
+    name.addEventListener('input', () => { s.name = name.value; updatePinLabel(s); save(); });
+    name.addEventListener('keydown', e => { if (e.key === 'Enter') name.blur(); });
+    el.querySelector('[data-act=replace]').addEventListener('click', () => { replaceTarget = s.id; $('#replaceInput').click(); });
+    el.querySelector('[data-act=remove]').addEventListener('click', () => removeSuspect(s.id));
+    el.addEventListener('pointerdown', e => onCardDown(e, s, el));
+    cardsLayer.appendChild(el); cardEls.set(s.id, el);
+
+    const pin = document.createElement('button');
+    pin.type = 'button'; pin.className = 'pin'; pin.dataset.pin = s.id;
+    pin.style.setProperty('--pc', pinColor(s));
+    pin.addEventListener('pointerdown', e => onPinDown(e, s));
+    pin.addEventListener('click', e => { if (e.detail === 0) pinActivate(s.id); });
+    pinsLayer.appendChild(pin); pinEls.set(s.id, pin);
+    updatePinLabel(s);
+  }
+  function updatePinLabel(s) {
+    const p = pinEls.get(s.id); if (p) p.setAttribute('aria-label', `Tie red string from ${s.name || 'this suspect'}`);
+  }
+
+  function renderAll() {
+    // reconcile cards
+    const ids = new Set(state.suspects.map(s => s.id));
+    for (const [id, el] of cardEls) if (!ids.has(id)) { el.remove(); cardEls.delete(id); pinEls.get(id)?.remove(); pinEls.delete(id); }
+    state.suspects.forEach(s => { if (!cardEls.has(s.id)) makeCard(s); });
+    state.suspects.forEach(placeCard);
+    drawStrings();
+    $('#caseTitle').value = state.title || '';
+    const n = state.suspects.length;
+    $('#countNum').textContent = n;
+    $('#dots').innerHTML = Array.from({length: MAX}, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('');
+    $('#addBtn').disabled = n >= MAX;
+    $('#empty').hidden = n > 0;
+    cardEls.forEach((el, id) => el.classList.toggle('sel', id === selected));
+    pinEls.forEach((el, id) => el.classList.toggle('armed', pending && pending.from === id));
+  }
+
+  function curve(x1, y1, x2, y2) {
+    const dist = Math.hypot(x2 - x1, y2 - y1);
+    const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2 + Math.min(70, dist * .12);
+    return { d: `M${x1},${y1} Q${cx},${cy} ${x2},${y2}`, mx: cx, my: ((y1 + y2) / 2 + cy) / 2 };
+  }
+
+  function drawStrings() {
+    const ids = new Set(state.links.map(l => l.id));
+    for (const [id, g] of strEls) if (!ids.has(id)) { g.remove(); strEls.delete(id); tagEls.get(id)?.remove(); tagEls.delete(id); }
+    state.links.forEach(l => {
+      const a = byId(l.a), b = byId(l.b); if (!a || !b) return;
+      let g = strEls.get(l.id);
+      if (!g) {
+        g = document.createElementNS(SVGNS, 'g');
+        g.innerHTML = `<path fill="none" stroke="rgba(20,20,20,.22)" stroke-width="3" stroke-linecap="round" transform="translate(3,5)" filter="url(#soft)"/>
+                       <path fill="none" stroke="#141414" stroke-width="5.2" stroke-linecap="round"/>
+                       <path fill="none" stroke="#e0372f" stroke-width="2.8" stroke-linecap="round"/>`;
+        stringGroup.appendChild(g); strEls.set(l.id, g);
+        tagEls.set(l.id, makeTag(l));
+      }
+      const [x1, y1] = pinXY(a), [x2, y2] = pinXY(b);
+      const c = curve(x1, y1, x2, y2);
+      g.querySelectorAll('path').forEach(p => p.setAttribute('d', c.d));
+      let ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+      if (ang > 90) ang -= 180; if (ang < -90) ang += 180;
+      const t = tagEls.get(l.id);
+      t.style.left = c.mx + 'px'; t.style.top = c.my + 'px';
+      t.style.transform = `translate(-50%,-50%) rotate(${ang}deg) translateY(-17px)`;
+    });
+  }
+
+  function makeTag(l) {
+    const t = document.createElement('div'); t.className = 'tag';
+    t.innerHTML = `<input id="tag-${l.id}" maxlength="48" placeholder="how are they linked?" aria-label="Connection"><button class="x" type="button" aria-label="Cut this string" title="Cut string">×</button>`;
+    const inp = t.querySelector('input');
+    const size = () => inp.size = clamp((inp.value || inp.placeholder).length, 4, 40);
+    inp.value = l.label || ''; size();
+    inp.addEventListener('input', () => { l.label = inp.value; size(); save(); });
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); });
+    t.querySelector('.x').addEventListener('click', () => {
+      state.links = state.links.filter(x => x.id !== l.id); drawStrings(); save(); toast('String cut.');
+    });
+    tagsLayer.appendChild(t);
+    return t;
+  }
+
+  /* ---------- dragging cards ---------- */
+  function bringToFront(s) {
+    const top = Math.max(0, ...state.suspects.map(x => x.z || 0));
+    if (top > 4000) state.suspects.sort((a, b) => a.z - b.z).forEach((x, i) => x.z = i + 1);
+    s.z = Math.max(0, ...state.suspects.map(x => x.z || 0)) + 1;
+  }
+  function onCardDown(e, s, el) {
+    if (e.target.closest('input,button')) return;
+    e.preventDefault();
+    selected = s.id; cancelPending(); bringToFront(s); renderAll();
+    const r = board.getBoundingClientRect(), sx = e.clientX, sy = e.clientY, ox = s.x, oy = s.y;
+    el.setPointerCapture(e.pointerId); el.classList.add('lifted');
+    const move = ev => { s.x = ox + (ev.clientX - sx) / r.width; s.y = oy + (ev.clientY - sy) / r.height; placeCard(s); drawStrings(); };
+    const up = () => { el.classList.remove('lifted'); el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); save(); };
+    el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  }
+
+  /* ---------- tying string ---------- */
+  function pinAt(x, y) {
+    const hit = document.elementsFromPoint(x, y).find(n => n.dataset && n.dataset.pin);
+    return hit ? hit.dataset.pin : null;
+  }
+  function showLive(fromId, x, y) {
+    const [x1, y1] = pinXY(byId(fromId)); const r = board.getBoundingClientRect();
+    live.setAttribute('d', curve(x1, y1, x - r.left, y - r.top).d); live.setAttribute('opacity', '.9');
+  }
+  function cancelPending() {
+    pending = null; live.setAttribute('opacity', '0');
+    pinEls.forEach(p => p.classList.remove('armed', 'target'));
+  }
+  function connect(a, b) {
+    if (a === b) return;
+    if (state.links.some(l => (l.a === a && l.b === b) || (l.a === b && l.b === a))) { toast('Those two are already tied together.'); return; }
+    const l = { id: uid(), a, b, label: '' };
+    state.links.push(l); drawStrings(); save();
+    requestAnimationFrame(() => document.getElementById('tag-' + l.id)?.focus());
+  }
+  function pinActivate(id) {
+    if (pending && pending.from !== id) { const from = pending.from; cancelPending(); connect(from, id); renderAll(); }
+    else if (pending && pending.from === id) { cancelPending(); }
+    else { pending = { from: id }; renderAll(); }
+  }
+  function onPinDown(e, s) {
+    e.preventDefault(); e.stopPropagation();
+    const pinEl = e.currentTarget;
+    if (pending && pending.from !== s.id) { pinActivate(s.id); return; }
+    const already = pending && pending.from === s.id;
+    pending = { from: s.id }; pinEl.classList.add('armed');
+    pinEl.setPointerCapture(e.pointerId);
+    const sx = e.clientX, sy = e.clientY; let moved = false, hover = null;
+    const move = ev => {
+      if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 6) moved = true;
+      if (!moved) return;
+      showLive(s.id, ev.clientX, ev.clientY);
+      const over = pinAt(ev.clientX, ev.clientY);
+      if (over !== hover) { pinEls.get(hover)?.classList.remove('target'); hover = over && over !== s.id ? over : null; pinEls.get(hover)?.classList.add('target'); }
+    };
+    const up = ev => {
+      pinEl.removeEventListener('pointermove', move); pinEl.removeEventListener('pointerup', up); pinEl.removeEventListener('pointercancel', up);
+      pinEls.get(hover)?.classList.remove('target');
+      if (moved) {
+        const target = pinAt(ev.clientX, ev.clientY);
+        cancelPending();
+        if (target && target !== s.id) connect(s.id, target);
+        renderAll();
+      } else if (already) { cancelPending(); renderAll(); }
+      else { live.setAttribute('opacity', '0'); renderAll(); }
+    };
+    pinEl.addEventListener('pointermove', move); pinEl.addEventListener('pointerup', up); pinEl.addEventListener('pointercancel', up);
+  }
+  board.addEventListener('pointermove', e => { if (pending && e.pointerType === 'mouse' && !e.buttons) showLive(pending.from, e.clientX, e.clientY); });
+  board.addEventListener('pointerdown', e => {
+    if (e.target.closest('.card,.pin,.tag,.note')) return;
+    selected = null; cancelPending(); renderAll();
+    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && pending) { cancelPending(); renderAll(); } });
+
+  /* ---------- adding / replacing photos ---------- */
+  function readImage(file) {
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => {
+        const side = Math.min(img.width, img.height), out = Math.min(380, side);
+        const c = document.createElement('canvas'); c.width = c.height = out;
+        c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, out, out);
+        URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', .82));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bad image')); };
+      img.src = url;
+    });
+  }
+  function freeSpot() {
+    const { W, H } = dims(), cw = parseFloat(getComputedStyle(board).getPropertyValue('--cw')) || cardEls.values().next().value?.offsetWidth || 130;
+    const ch = cw * 1.32, xs = [.14, .38, .62, .86], ys = [.05, (H - ch) / H * .5, (H - ch - 10) / H];
+    let best = null, bestD = -1;
+    ys.forEach(y => xs.forEach(x => {
+      const d = Math.min(Infinity, ...state.suspects.map(s => Math.hypot((s.x - x) * W, (s.y - y) * H)));
+      if (d > bestD) { bestD = d; best = { x, y }; }
+    }));
+    return { x: best.x + (Math.random() - .5) * .04, y: Math.max(.01, best.y + (Math.random() - .5) * .04) };
+  }
+  async function addFiles(files) {
+    const imgs = [...files].filter(f => f.type.startsWith('image/'));
+    if (!imgs.length) { toast('That file isn\'t a photo. Try a JPG, PNG or similar image.'); return; }
+    const room = MAX - state.suspects.length;
+    if (room <= 0) { toast('The board is full at 12 suspects. Take one down to pin another.'); return; }
+    const take = imgs.slice(0, room); let last = null;
+    for (const f of take) {
+      try {
+        const img = await readImage(f), spot = freeSpot();
+        const s = { id: uid(), name: '', x: spot.x, y: spot.y, rot: +(Math.random() * 10 - 5).toFixed(1), z: 1, img };
+        bringToFront(s); state.suspects.push(s); last = s; renderAll();
+      } catch (e) { toast(`Couldn't open ${f.name}. Try a different image.`); }
+    }
+    save();
+    if (imgs.length > room) toast(`Only room for ${room} more. Pinned the first ${room}.`);
+    if (last) { selected = last.id; renderAll(); document.getElementById('name-' + last.id)?.focus(); }
+  }
+  let replaceTarget = null;
+  $('#replaceInput').addEventListener('change', async e => {
+    const f = e.target.files[0]; e.target.value = '';
+    const s = byId(replaceTarget); if (!f || !s) return;
+    try { s.img = await readImage(f); cardEls.get(s.id).querySelector('img').src = s.img; save(); }
+    catch (err) { toast('Couldn\'t open that image. Try a different one.'); }
+  });
+  $('#fileInput').addEventListener('change', e => { const fs = e.target.files; addFiles(fs).finally(() => e.target.value = ''); });
+  $('#addBtn').addEventListener('click', () => $('#fileInput').click());
+  $('#emptyAdd').addEventListener('click', () => $('#fileInput').click());
+
+  let dragDepth = 0;
+  board.addEventListener('dragenter', e => { if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); dragDepth++; $('#drop').hidden = false; } });
+  board.addEventListener('dragover', e => { if ([...e.dataTransfer.types].includes('Files')) e.preventDefault(); });
+  board.addEventListener('dragleave', () => { if (--dragDepth <= 0) { dragDepth = 0; $('#drop').hidden = true; } });
+  board.addEventListener('drop', e => { e.preventDefault(); dragDepth = 0; $('#drop').hidden = true; addFiles(e.dataTransfer.files); });
+
+  function removeSuspect(id) {
+    const s = byId(id); if (!s) return;
+    lastRemoved = { s, links: state.links.filter(l => l.a === id || l.b === id) };
+    state.suspects = state.suspects.filter(x => x.id !== id);
+    state.links = state.links.filter(l => l.a !== id && l.b !== id);
+    if (selected === id) selected = null; cancelPending(); renderAll(); save();
+    toast(`${s.name || 'Suspect'} taken off the board.`, () => {
+      if (state.suspects.length >= MAX) return;
+      state.suspects.push(lastRemoved.s); state.links.push(...lastRemoved.links); renderAll(); save();
+    });
+  }
+
+  /* ---------- header controls ---------- */
+  $('#caseTitle').addEventListener('input', e => { state.title = e.target.value; save(); });
+  $('#caseTitle').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
+  $('#resetBtn').addEventListener('click', () => { const prev = state; state = upgrade(sample()); selected = null; cancelPending(); renderAll(); save(); toast('Example case loaded.', () => { state = prev; renderAll(); save(); }); });
+  let clearArm;
+  $('#clearBtn').addEventListener('click', e => {
+    const b = e.currentTarget;
+    if (!b.classList.contains('arm')) { b.classList.add('arm'); b.textContent = 'Click again to clear'; clearTimeout(clearArm); clearArm = setTimeout(() => { b.classList.remove('arm'); b.textContent = 'Clear board'; }, 3000); return; }
+    clearTimeout(clearArm); b.classList.remove('arm'); b.textContent = 'Clear board';
+    const prev = state; state = { title: state.title, suspects: [], links: [] }; selected = null; cancelPending(); renderAll(); save();
+    toast('Board cleared.', () => { state = prev; renderAll(); save(); });
+  });
+
+  let decoRaf;
+  new ResizeObserver(() => {
+    if (state) { state.suspects.forEach(placeCard); drawStrings(); }
+    cancelAnimationFrame(decoRaf); decoRaf = requestAnimationFrame(drawDeco);
+  }).observe(board);
+
+  /* ---------- boot ---------- */
+  function start(data) {
+    state = upgrade((data && data.state) || load() || sample());
+    const d = new Date();
+    $('#caseNo').textContent = `no. 26-0847 · opened ${d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }).toLowerCase()}`;
+    renderAll();
+    if (document.fonts) document.fonts.ready.then(() => { state.suspects.forEach(placeCard); drawStrings(); });
+  }
+  window.claude?.hot?.snapshot?.(() => ({ state }));
+  window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+</body>
+</html>
