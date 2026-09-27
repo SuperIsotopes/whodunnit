@@ -45,6 +45,7 @@
     font:800 clamp(24px,3.4vw,38px)/1.1 'Figtree','Avenir Next',system-ui,sans-serif;letter-spacing:-.025em;color:var(--ink);
     background:transparent;border:0;border-bottom:2.5px dashed transparent;padding:2px 0;width:100%;
   }
+  #caseTitle::placeholder{color:#a9a8a1}
   #caseTitle:hover{border-bottom-color:rgba(20,20,20,.25)}
   #caseTitle:focus{outline:none;border-bottom-color:var(--ink)}
   .caseno{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -216,6 +217,9 @@
   .tips{font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 22px;line-height:1.5}
   .tips b{color:var(--ink);font-weight:700}
 
+  .credit{font-size:13.5px;color:var(--muted);text-align:center;padding-top:6px}
+  .credit a{color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+  .credit a:hover{color:var(--red)}
   .toast{
     position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
     background:var(--white);color:var(--ink);padding:11px 18px;border-radius:999px;z-index:9000;
@@ -242,7 +246,7 @@
       </svg>
       <div class="casefile">
         <div class="eyebrow"><span class="chip">case file</span><span class="chip red">unsolved</span><span class="caseno" id="caseNo">case no. 26-0847</span></div>
-        <input id="caseTitle" aria-label="Case name" maxlength="60" value="The Ashford Manor Murder">
+        <input id="caseTitle" aria-label="Case name" maxlength="60" placeholder="name your case" value="">
       </div>
     </div>
     <div class="controls">
@@ -311,6 +315,8 @@
     <span><b>drag photos</b> to rearrange, or drop image files onto the board</span>
     <span><b>tap a pin</b>, then another, if you're on a phone</span>
   </div>
+
+  <footer class="credit">made by <a href="https://github.com/SuperIsotopes" target="_blank" rel="noopener">SuperIsotopes</a></footer>
 
   <input type="file" id="fileInput" accept="image/*" multiple hidden>
   <input type="file" id="replaceInput" accept="image/*" hidden>
@@ -846,7 +852,7 @@
 
   /* ---------- boot ---------- */
   function start(data) {
-    state = upgrade((data && data.state) || load() || sample());
+    state = upgrade((data && data.state) || load() || { title: '', suspects: [], links: [], style: 3 });
     const d = new Date();
     $('#caseNo').textContent = `no. 26-0847 · opened ${d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }).toLowerCase()}`;
     renderAll();
